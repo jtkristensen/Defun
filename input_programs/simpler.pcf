@@ -1,0 +1,5 @@
+
+let f0 = fun g0 f = fun h0 x = f x in
+let f1 = fun g1 y = succ (y) in
+
+f0 f1 10

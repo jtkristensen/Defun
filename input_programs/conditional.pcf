@@ -1,0 +1,8 @@
+
+let const = fun const x = \y -> x   in
+let gt0   = fun gt0 n = const 1 n in
+let eq0   = fun eq0 m = const 0 m in
+
+let f = fun conditional k = if k then gt0 else eq0 in
+
+f 100 0

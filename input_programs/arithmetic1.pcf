@@ -1,0 +1,6 @@
+
+let add = fun f n = \m -> if n then f (pred(n)) (succ(m))   else m in
+let mul = fun g x = \y -> if x then (add y) (g (pred(x)) y) else 0 in
+let sqr = \x -> mul x x in
+
+sqr 8

@@ -1,0 +1,7 @@
+let add = fun a0 n = fun a1 m = if n then a0 (pred(n)) (succ(m)) else m in
+
+let f = \x -> x 1     in
+let h = \y -> succ(y) in
+let g = \z -> pred(z) in
+
+add (f g) (f h)

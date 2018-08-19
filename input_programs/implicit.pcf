@@ -1,0 +1,6 @@
+let f = \x -> x 1 in
+let g = f in
+let h = g in
+let f = h (\x -> (succ(x))) in
+
+f

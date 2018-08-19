@@ -1,0 +1,17 @@
+
+let add = fun f n = \ m -> if n then (f (pred(n))) (succ(m)) else m in
+
+let pair = \l -> \r -> \s -> s l r  in
+let fst  = \p -> p (\x -> \y -> x)  in
+let snd  = \p -> p (\x -> \y -> y)  in
+
+let fib = \n ->
+  let fib_aux =
+    fun f n =
+      if   n
+      then (let p = f (pred(n)) in (pair (add (snd p) (fst p)) (fst p)))
+      else (pair 1 1)
+  in snd (fib_aux n)
+in
+
+fib 10
