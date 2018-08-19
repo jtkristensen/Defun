@@ -3,16 +3,15 @@ Comparing two defunctionalization strategies.
 
 ## What is this?
 
-The first such closure converting transformation is called defunctionalization,
+The first closure converting transformation is called defunctionalization,
 and it was introduced by John C. Reynolds in 1968.
 
-He presented it as an ad-hoc transformation in the paper
-"J. C. Reynolds, Definitional interpreters for higher-order programming languages".
+He presented it as an ad-hoc transformation in his paper
+"Definitional interpreters for higher-order programming languages".
 Here, Reynolds introduces the terms defining and defined language of an interpreter,
-and explains that some properties of the defining language, such as the order of execution,
-may be inherited into the defined one.
+and explains that some properties of the defining language, such as the order of execution, may be inherited into the defined one.
 
-In the remaining article, Reynolds’s focus is mainly a problem he has with
+In the remaining article, Reynolds focuses on a problem about
 controlling the call-convention (Call-by-name/Call-by-value) in an interpreter
 he is writing, where it turns out to be preferable to write an interpreter for his
 higher-order defined language, in a defining language which is first order.
