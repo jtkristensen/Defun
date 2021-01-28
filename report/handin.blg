@@ -1,0 +1,55 @@
+This is BibTeX, Version 0.99d (TeX Live 2013/Debian)
+Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
+The top-level auxiliary file: ./handin.aux
+The style file: DIKU.bst
+Database file #1: handin.bib
+Warning--I didn't find a database entry for "reynolds"
+Warning--empty journal in fun
+Warning--empty journal in cfa-jan
+Warning--empty year in cfa-jan
+Warning--empty journal in Nielson
+Warning--empty year in Nielson
+Warning--empty journal in cfa0-mlton
+Warning--empty journal in ClosureConversion
+You've used 8 entries,
+            2421 wiz_defined-function locations,
+            605 strings with 4948 characters,
+and the built_in function-call counts, 1647 in all, are:
+= -- 137
+> -- 79
+< -- 0
++ -- 32
+- -- 24
+* -- 121
+:= -- 315
+add.period$ -- 8
+call.type$ -- 8
+change.case$ -- 36
+chr.to.int$ -- 0
+cite$ -- 15
+duplicate$ -- 60
+empty$ -- 125
+format.name$ -- 24
+if$ -- 318
+int.to.chr$ -- 0
+int.to.str$ -- 8
+missing$ -- 17
+newline$ -- 27
+num.names$ -- 16
+pop$ -- 30
+preamble$ -- 1
+purify$ -- 28
+quote$ -- 0
+skip$ -- 52
+stack$ -- 0
+substring$ -- 40
+swap$ -- 3
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 30
+warning$ -- 7
+while$ -- 16
+width$ -- 9
+write$ -- 61
+(There were 8 warnings)

@@ -1,0 +1,156 @@
+\documentclass[fleqn, 12pt, a4paper]{article}
+
+% Packages:
+\usepackage{graphicx}                   % For figure includes
+\usepackage[T1]{fontenc}                % For mixing up \textsc{} with \textbf{}
+\usepackage[utf8]{inputenc}             % For scandinavian input characters(æøå)
+\usepackage{amsfonts, amsmath, amssymb} % For common mathsymbols and fonts
+\usepackage[english]{babel}              % For danish titles
+\usepackage{hyperref}                   % For making links and references
+\usepackage{url}                        % Just because {~_^}
+\usepackage{array}                      % ...
+\usepackage[usenames, dvipsnames, svgnames, table]{xcolor}
+\usepackage{tabularx, colortbl}
+%% \usepackage{xcolor}
+\usepackage{verbatim} % For entering code snippets.
+\usepackage{fancyvrb} % A "fancy" verbatim (for pseudo code)
+\usepackage{listings} % For boxed codesnippets, and file includes. (begin)
+\usepackage{lipsum}   % For generating dummy text at this demonstration
+\usepackage{enumitem} % For enumerating with letters and other cool stuff
+\usepackage{titlesec} % For deciding title size and -font
+\usepackage{cite}
+\usepackage{stmaryrd}
+\usepackage[toc,page]{appendix}
+\usepackage{minted}
+\usepackage{MnSymbol,wasysym}
+
+% Basic layout:
+\setlength{\textwidth}{165mm}
+\setlength{\textheight}{240mm}
+\setlength{\parindent}{0mm}
+\setlength{\parskip}{\parsep}
+\setlength{\headheight}{0mm}
+\setlength{\headsep}{0mm}
+\setlength{\hoffset}{-2.5mm}
+\setlength{\voffset}{0mm}
+\setlength{\footskip}{15mm}
+\setlength{\oddsidemargin}{0mm}
+\setlength{\topmargin}{0mm}
+\setlength{\evensidemargin}{0mm}
+
+\setminted[text]{
+   mathescape=true
+ , escapeinside=@@
+ , frame=single
+ , framesep=3mm
+ , baselinestretch=1.2
+ , fontsize=\footnotesize
+}
+
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+% Colors:
+\definecolor{KU-red}{RGB}{144, 26, 30}
+\definecolor{MS-blue}{rgb}{.204,.353,.541}
+\definecolor{MS-lightBlue}{rgb}{.31,.506,.741}
+
+% Text Coloring:
+\newcommand{\green}[1]{\textbf{\color{LimeGreen}{#1}}}
+\newcommand{\blue} [1]{\textbf{\color{blue} {#1}}}
+\newcommand{\red}  [1]{\textbf{\color{KU-red}  {#1}}}
+
+% Section style
+\titleformat*{\section}{\large\sffamily\color{black}}
+
+% ************************* Start Document *****************
+\begin{document}
+
+% ************************* Page Header ********************
+\begin{minipage}[b]{1.0\linewidth}
+%% \includegraphics[height=30mm]{./img/KULogo}
+
+{\color{KU-red}\hrule}
+\vspace*{2ex}
+\begin{center}
+    {\Large \bf Program Analysis and Transformation} \vspace*{1ex} \\
+    {\large \tt Final Project - Defunctionalization} \vspace*{1ex} \\
+    { Joachim Tilsted Kristensen (qvp401)}
+\end{center}
+\vspace*{-6pt}
+{\color{KU-red}\hrule}
+\end{minipage}
+\renewcommand*{\thesection}{\!\!\!\!\!\!\!\!}
+\vspace*{-0.8cm}
+% **************** Assignment Starts Here ******************
+
+\newcommand{\forceindent}{\leavevmode{\parindent=1em\indent}}
+
+\def\Var{\ensuremath{\text{\bf Var}}}
+\def\Con{\ensuremath{\text{\bf Con}}}
+\def\N{\ensuremath{\mathbb N}}
+\def\OR{\ensuremath{\ |\ }}
+\def\TO{\ensuremath{\rightarrow}}
+\def\LB{\ensuremath{\llbracket}}
+\def\RB{\ensuremath{\rrbracket}}
+\newcommand\LIT[1]{\ensuremath{\text{\tt #1}}}
+\newcommand\SLIT[1]{\ \LIT{#1}\ }
+\newcommand\IF[3]{\LIT{if}\ #1\ \LIT{then}\ #2\ \LIT{else}\ #3}
+\newcommand\INBR[1]{\ensuremath{\llbracket #1 \rrbracket}}
+\def\Eval{\ensuremath \downarrow}
+\newcommand \BX [1]
+  {\scriptsize\framebox{{\raisebox{0pt}[0.7\baselineskip][0.01\baselineskip]{\small #1}}}}
+
+\newcommand\Axiom[2]
+                 {\ensuremath{\text{\small #1}:\frac{\displaystyle}
+                 {\displaystyle #2}}
+                 }
+\newcommand\InfOne[3]
+                 {\ensuremath{\text{\small #2}:\frac{\displaystyle #1}
+                 {\displaystyle #3}}
+                 }
+\newcommand\InfTwo[4]
+                 {\ensuremath{\text{\small #3}:\frac{\displaystyle #1 \quad #2}
+                 {\displaystyle #4}}
+                 }
+\newcommand\InfThree[5]
+                 {\ensuremath{\text{\small #4}:
+                     \frac{\displaystyle #1 \quad #2 \quad #3}
+                          {\displaystyle #5}}
+                 }
+\newcommand\InfFour[6]
+                 {\ensuremath{\text{\small #5}:
+                     \frac{\displaystyle #1 \quad #2 \quad #3 \quad #4}
+                          {\displaystyle #6}}
+                 }
+\newcommand\InfFive[7]
+                 {\ensuremath{\text{\small #6}:
+                     \frac{\displaystyle #1 \quad #2 \quad #3 \quad #4 \quad #5}
+                          {\displaystyle #7}}
+                 }
+
+
+\section{Abstract}\input{./ex/abstract.tex}
+%% \section{Motivation}\input{./ex/motivation.tex}
+\section{Introduction}\input{./ex/intro.tex}
+
+\newpage
+\section{Reynolds's Transformation}\input{./ex/reynolds.tex}
+
+\newpage
+\section{Language Description}\input{./ex/ld.tex}
+
+%% \newpage
+\section{Analysis Description}\input{./ex/analysis.tex}
+
+\section{Inferring Flow-Types}\input{./ex/inference.tex}
+
+\newpage
+\section{Transformation}\input{./ex/transformation.tex}
+\section{Implementation}\input{./ex/implementation.tex}
+\section{Related Work}\input{./ex/related.tex}
+\section{Conclusion}\input{./ex/conclusion.tex}
+\section{Appendix}\input{./ex/appendix.tex}
+
+\bibliographystyle{DIKU}
+\bibliography{handin}
+\end{document}

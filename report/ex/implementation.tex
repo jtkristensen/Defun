@@ -1,0 +1,62 @@
+The handin comes together with an implementation zipped in a file named {\tt code.zip}
+The file contains a script {\tt defun-code.hs}
+which performs one of the two transforms programs.
+Running the command:
+\begin{minted}{text}
+  runhaskell defun-code.hs -naive program_name.pcf
+\end{minted}
+will do Reynolds's transformation.
+and
+\begin{minted}{text}
+  runhaskell defun-code.hs -cfa program_name.pcf
+\end{minted}
+will perform the control-flow based one.
+There is also a flag called {\tt -experiment},
+it performs Reynolds's transformation, but then hoists each function body
+out into its own function-body, and replacing some calls to {\tt apply}
+in the hope of removing some calls to apply.
+
+If you are on a unix system, the folder contains a shell-script {\tt test.sh}
+which runs the transformation on a number of programs in the sub-folder
+{\tt input\_programs}, stores the results in another sub-folder
+named {\tt output\_programs}.
+
+On average the controlflow based analysis produces {\tt apply}-functions
+with 1.1 cases, which corresponds to the result for CFA-0 found in \cite{cfa0-mlton}.
+The naive version produces functions with 1.95 cases on average.
+So, the control-flow directed transformation is significantly better on the
+small number of examples that I have tested. Both analysis produce SML-programs
+that agree on the result, and I supplied a small interpreter for L1,
+which confirms that these results are equal to the expected ones
+(i.e. the transformed programs do not agree because they both
+compute the wrong thing. They are actually correct).
+
+{\bf Example.}\\
+(For ease of use, I added lambda to the parser: {\tt \textbackslash{x} -> e}
+just parses as {\tt fun fn' x = e}).
+
+The naive transformation, translates the following fibonacci-program
+\inputminted{text}{../code/input_programs/fib.pcf}
+
+into
+
+\inputminted[frame=single, breaklines]{sml}{../code/output_programs/naive_fib.sml}
+
+Where the control flow based one produces
+
+\inputminted[frame=single, breaklines]{sml}{../code/output_programs/cfa_fib.sml}
+
+Additionally, I realized, that the control flow based analysis
+will sometimes label a function arrow with the empty-set.
+meaning that a variable even though having a function type, is
+never actually applied to anything.
+So, we get some dead-code detection for free!
+
+I implemented this as a datatype called {\tt dead\_code}.
+And, as an example, the program:
+\inputminted{text}{../code/input_programs/dead_fun.pcf}
+
+Actually evaluates to.
+\inputminted[frame=single, breaklines]{sml}{../code/output_programs/cfa_dead_fun.sml}
+
+I left the optimization in there, but I am not sure if breaks anything yet.

@@ -1,0 +1,90 @@
+In Fig 7, we had to guess the set of functions $e_0$ could evaluate to
+in order to properly infer the type of $(e_0 e_1)$ which is not really
+appropriate for our transformation.
+So, we give a more algorithmic version \fbox{$\hat\Gamma \Vdash e : \hat\tau$}
+of the system in Fig 8.
+
+There not much difference between the systems in Fig 8 and Fib 7,
+but the important ones are
+\begin{itemize}
+  \item Nothing has changed from TF-Var, TF-Nat, TF-Succ and TF-Pred
+    in their ``TFA-'' equivalent rules.
+  \item In TFA-If, we now require explicitly (via the subtyping rule),
+    that the set of functions returned from each branch are subsets of each other.
+  \item In TFA-Let require that the set of functions that the whole expression
+    can evaluate to, is really a subset of those that $e_1$ can evaluate to.
+  \item In TFA-Fun, we now require that set of functions that {\tt (fun $f$ $x$ = $e$)}
+    may evaluate to cannot be differ from the ones that $e$ can evaluate to.
+  \item In TFA-App, we now require that the set of functions that $e_1$ can evaluate
+    to, is bounded by the set of functions $e_0$ can take as arguments,
+    and like with the TFA-Fun rule, we also impose a restriction on the output type.
+\end{itemize}
+
+\fbox{$\hat\Gamma \Vdash e : \hat\tau$}
+\begin{center}
+        \InfOne           {\hat\Gamma(x) = \hat\tau}
+                {TFA-Var}  {\hat\Gamma \Vdash x : \hat\tau}
+  \quad \Axiom  {TFA-N}    {\hat\Gamma \Vdash \overline n : \LIT{nat}}
+
+        \InfOne           {\hat\Gamma \Vdash e : \LIT{nat} }
+                {TFA-Succ} {\hat\Gamma \Vdash \LIT{succ}(e) : \LIT{nat}}
+  \quad \InfOne           {\hat\Gamma \Vdash e : \LIT{nat} }
+                {TFA-Pred} {\hat\Gamma \Vdash \LIT{pred}(e) : \LIT{nat}}
+
+        \InfFive          {\hat\Gamma \Vdash e_0 : \LIT{nat}}
+                          {\hat\Gamma \Vdash e_1 :                  \hat\tau_0}
+                          {\hat\Gamma \Vdash e_2 :                  \hat\tau_1}
+                          {\hat\tau_0 \preceq \hat\tau}
+                          {\hat\tau_1 \preceq \hat\tau}
+                {TFA-If}   {\hat\Gamma \Vdash (\IF{e_0}{e_1}{e_2}) : \hat\tau}
+
+        \InfThree         {\hat\Gamma                   \Vdash e_0 : \hat\tau_0}
+                          {\hat\Gamma[x \mapsto \hat\tau_0] \Vdash e_1 : \hat\tau_1}
+                          {\hat\tau_1 \preceq \hat\tau}
+                {TFA-Let}  {\hat\Gamma \Vdash \LIT{let}\ x = e_0 \SLIT{in} e_1 : \hat\tau}
+
+        \InfTwo            {\hat\Gamma[f \mapsto \hat\tau_0 \xrightarrow{\{f\}}
+                            \hat\tau_1, x \mapsto \hat\tau_0]
+                            \Vdash e : \hat\tau_2}
+                           {\hat\tau_2 \preceq \hat\tau_1}
+                {TFA-Fun}  {\hat\Gamma \Vdash (\LIT{fun}\ f\ x = e) : \hat\tau_0
+                           \xrightarrow{\{f\}} \hat\tau_2}
+
+        \InfFour          {\hat\Gamma \Vdash e_0 : \hat\tau_1
+                              \xrightarrow{\varphi} \hat\tau_2}
+                          {\hat\Gamma \Vdash e_1 : \hat\tau_{arg}}
+                          {\hat\tau_{arg} \preceq \hat\tau_1 }
+                          {\hat\tau_2 \preceq \hat\tau}
+                {TFA-App}  {\hat\Gamma \Vdash (e_0\ e_1) : \hat\tau}
+
+\vspace{.5cm}            Fig 8 : Flow-typing judgement for L1 (algorithmic).
+\end{center}
+{\bf Theorem 2} (Soundness of algorithmic flow-typing)\\
+{\it If $\hat\Gamma \Vdash e : \hat\tau$ then $\hat\Gamma \vdash e : \hat\tau$}.
+
+This proof is also straight forward by induction on typing derivations:
+As the rules in Fig 8 are all restrictions
+on the corresponding rules in Fig 7. So, if $e$ was type-able with the restrictions,
+it most certainly is type-able without them.
+\hfill$\square$
+
+{\bf Theorem 3} (Completeness of algorithmic flow-typing)\\
+{\it If $\hat\Gamma \vdash e : \hat\tau$ then $\hat\Gamma \Vdash e : \hat\tau'$
+and $\hat\tau' \preceq \hat\tau$}.
+
+By induction on typing derivations $\hat\Gamma \vdash e : \hat\tau$,
+we may either use the TF-Sub rule, or we may use the corresponding
+algorithmic typing rule which ``in-lines'' subtyping everywhere.
+\hfill$\square$
+
+Now, to extract and solve constraints, we define a set of effect variables $E$
+a set of constraints $C$ and a new typing judgment $\overline\Gamma \vdash e : \overline\tau$ by
+\begin{align*}
+  \phi &::= \BX{i}\\
+  \overline\tau &::= \SLIT{nat} \OR \overline\tau_0 \xrightarrow{\phi} \overline\tau_1\\
+  \overline\Gamma &::= [x_0 \mapsto \overline\tau_0, \dots, \overline \tau_1]\\
+  E &::= \phi \OR \varphi\\
+  C &::= E_0 \subseteq E_1
+\end{align*}
+And solve them completely analogous to what is described in
+pages 11 and 12 of Andrzej's handout\cite{fun}.

@@ -1,0 +1,138 @@
+There are off-course multiple ways of going about CFA-0, and two of them are
+described in \cite{PoPA}.
+The first one, is an abstract constraint based algorithm (page 146)
+which applies to all kinds of languages (imperative, object-oriented etc..),
+which are not necessarily typed.
+
+The second is a type-and-effect system based approach for which a declarative
+type-system is given on page 288 of the same book.
+In this project, we shall focus our attention on the latter,
+and start by giving a refined type-system of the one presented in Fig 2,
+which keeps track of what functions the operand of an apply statement possibly
+evaluate to.
+
+We assume (wlog) that all function identifiers in a L1-program are globally
+uniqe, and let $\varphi$ be a meta-variable,
+ranging over sets of well-formed function names.
+\[ \varphi ::= \{f_0, \dots, f_n \} \]
+We then equip function arrows $\cdot \xrightarrow{\varphi} \cdot$ with such
+meta-variables type which I decided to call a {\it flow-type}:
+\[\hat\tau ::= {\tt nat} \OR \hat\tau_0 \xrightarrow{\varphi} \hat\tau_1 \]
+The aim is off course to define a typing judgment $\hat\Gamma \vdash e : \hat\tau$
+such that, in an application $(e_0\ e_1)$ where
+$\hat\Gamma \vdash e_0 : \hat\tau_0 \xrightarrow{\varphi} \hat\tau_1$,
+we know that the functions applied is {\it at most} one of those listed
+in $\varphi$.
+
+\newpage
+First we define a subtyping rule.
+
+\fbox{$\hat\tau_0 \preceq \hat\tau_1$}
+\begin{center}
+  \Axiom {ST-Nat} {\SLIT{nat} \preceq \SLIT{nat}}
+  \InfTwo         {\hat\tau_0 \preceq \hat\tau_0'}
+                  {\hat\tau_1' \preceq \hat\tau_1}
+         {ST-Fun} {\hat\tau_0'  \xrightarrow{\varphi}  \hat\tau_1' \preceq
+                   \hat\tau_0 \xrightarrow{\varphi'} \hat\tau_1}
+                  $\left( \varphi' \subseteq \varphi \right)$\\
+\vspace{.5cm} Fig 6: Subtyping rules for flow-types.
+\end{center}
+In this judgment, the first rule is trivial really.
+The second rule states,
+(besides the condition that a function which accepts a value of type $\hat\tau_0$
+will be happy to accept on of the smaller subtype $\hat\tau_0'$ etc..)
+that the set of functions $\varphi'$ which the former type may be
+must be a subset of those that they are is a subtype of (mentioned in $\varphi$).
+
+We require that the structure of flow-types is the same of the underlying
+type-system (Fig 2). So, it is clear to see that,
+if $\hat{[]}\vdash e : \hat\tau$ then also $[]\vdash e : \tau$.
+Moreover, since the usual subtyping rule is transitive, and $\subseteq$
+is transitive, then so is $\preceq$.
+
+We then give a declarative type system for the system in Fig 2,
+which is well-suited for reasoning.
+
+\fbox{$\hat\Gamma \vdash e : \hat\tau$}
+\begin{center}
+        \InfOne           {\hat\Gamma(x) = \hat\tau}
+                {TF-Var}  {\hat\Gamma \vdash x : \hat\tau}
+  \quad \Axiom  {TF-Z}    {\hat\Gamma \vdash \overline n : \LIT{nat}}
+
+        \InfOne           {\hat\Gamma \vdash e : \LIT{nat} }
+                {TF-Succ} {\hat\Gamma \vdash \LIT{succ}(e) : \LIT{nat}}
+  \quad \InfOne           {\hat\Gamma \vdash e : \LIT{nat} }
+                {TF-Pred} {\hat\Gamma \vdash \LIT{pred}(e) : \LIT{nat}}
+
+        \InfThree         {\hat\Gamma \vdash e_0 : \LIT{nat}}
+                          {\hat\Gamma \vdash e_1 :                  \hat\tau}
+                          {\hat\Gamma \vdash e_2 :                  \hat\tau}
+                {TF-If}   {\hat\Gamma \vdash (\IF{e_0}{e_1}{e_2}) : \hat\tau}
+
+        \InfTwo           {\hat\Gamma                   \vdash e_0 : \hat\tau_0}
+                          {\hat\Gamma[x \mapsto \hat\tau_0] \vdash e_1 : \hat\tau_1}
+                {TF-Let}  {\hat\Gamma \vdash \LIT{let}\ x = e_0 \SLIT{in} e_1 : \hat\tau_1}
+
+        \InfOne           {\hat\Gamma[f \mapsto \hat\tau_0 \xrightarrow{\{f\}} \hat\tau_1, x \mapsto \hat\tau_0]
+                           \vdash e : \hat\tau_1}
+                {TF-Fun}  {\hat\Gamma \vdash (\LIT{fun}\ f\ x = e) : \hat\tau_0
+                           \xrightarrow{\{f\}} \hat\tau_1}
+        \InfTwo           {\hat\Gamma \vdash e_0 : \hat\tau_1
+                           \xrightarrow{\varphi} \hat\tau_2}
+                          {\hat\Gamma \vdash e_1 : \hat\tau_1}
+                {TF-App}  {\hat\Gamma \vdash (e_0\ e_1) : \hat\tau_2}
+
+        \InfTwo           {\hat\Gamma \vdash e : \hat\tau'}{\hat\tau \preceq \hat\tau'}
+                {TF-Sub}  {\hat\Gamma \vdash e : \hat\tau }
+
+\vspace{.5cm}            Fig 7 : Flow-typing judgement for L1 (declarative).
+\end{center}
+The typing judgment \fbox{$\hat\Gamma \vdash e : \hat\tau$} is formally defined
+in Figure 7, but here we describe the important points for each rule:
+\begin{itemize}
+  \item In TF-Var, the functions that a variable $x$ can possibly be,
+    is just the ones that we recorded in its type where $x$ was defined.
+  \item Natural numbers, and the operations {\it successor} and {\it predecessor}
+    on expressions cannot be functions.
+  \item In TF-If we require implicitly, that the functions that may be returned
+    from an if-statement are exactly those that can be returned from one of the
+    branches. That is, it may be that
+    $\hat\Gamma e_0 : \hat\tau_{e_{0}0} \xrightarrow{\varphi_0} \hat\tau_{e_{0}1}$ and
+    $\hat\Gamma e_1 : \hat\tau_{e_{1}0} \xrightarrow{\varphi_1} \hat\tau_{e_{1}1}$ and
+    $(\varphi_0 \neq \emptyset \lor \varphi_1 \neq \emptyset)
+    \land \varphi_0 \cap \varphi_1 = \emptyset$,
+    but the implicit requirement, that they must be given the same type,
+    enforces that the resulting type
+    $\hat\tau = \hat\tau_0 \xrightarrow{\varphi} \hat\tau$ must be at least
+    the union of the both ($\varphi \subseteq \varphi_0 \cup \varphi_1$).
+  \item In TF-Let, we record which functions may be the result of
+    evaluating $e_0$ in $\hat\tau_0$. So, when we apply the TF-Var rule on $x$ later,
+    it can really only be one of the functions noted in $\hat\tau_0$.
+  \item In the TF-Fun rule, a function in L1 is already a value,
+    so the only function that can result from evaluating it is the function
+    $f$ itself.
+  \item In the TF-App rule, we can simply read an upper bound on
+    the functions that $e_0$ can possibly evaluate to, as we have recorded it
+    in the type of $e_0$
+  \item The TF-Sub rule says that, at any point during the derivation,
+    we can increase the size of $\varphi$ over an arrow to satisfy one of the
+    existing rules (usefull in for instance the TF-If rule as described above).
+\end{itemize}
+
+Clearly everything type-able in the type-and-effect (Fig 7) system is also type-able
+in the system in Fig 2.
+Since the two type-systems structurally equivalents of each other,
+we may denote the type of $\hat\tau$ without the sets as $|\hat\tau|$,
+and see that $|\hat\tau| = \tau$. Hence
+
+{\bf Theorem 1}\ (Conservativity of the Flow-type system):\\
+{\it If $[x_0 \mapsto \hat\tau_0, \dots, x_i \mapsto \hat\tau_i] \vdash e : \hat\tau$
+then $[x_0 \mapsto |\hat\tau_0|, \dots, x_i \mapsto |\hat\tau|_i] \vdash e : \tau$}
+
+Since all of the rules in Fig 2 and Fig 7 differ only by the meta-variables,
+the proof becomes completely straight forward induction typing derivations.
+\hfill$\square$
+
+For the same reasons, and since L1 is really a subset of PCF,
+it is also straight forward to show progress and preservation theorems
+for the system in Fig 7.

@@ -1,0 +1,110 @@
+The (or at least as far as I could find) first such closure converting
+transformation is called defunctionalization,
+and it was introduced by John C. Reynolds in 1968.
+The presentation, was an ad-hoc transformation of an interpreter in the paper
+\cite{Reynolds1968}.
+Here, Reynolds introduces the terms {\it defining} and {\it defined}
+language of an interpreter, and explains that some properties of the
+defining language, such as the order of execution,
+may be inherited into the defined one.
+This particular property then becomes Reynolds's focus for the remainder
+of the article, where he uses several pages on explaning what a closure is,
+without using the wordclosure\footnote{It probably had not been invented yet?}.
+So, to be able to control the call-conveintion (Call-by-name/Call-by-value),
+it becomes preferable to write an interpreter for
+his higher-order defined language, in a defining language which is first order.
+He obtains such an interpreter by transforming an existing interpreter
+written in a higher-order language into a similar first order language.
+
+The core idea of Reynolds's method, is to replace all higher-order
+functions with values that {\it represent} functions,
+These values can then no longer be applied directly,
+and so their application is replaced by a huge function {\tt apply},
+This function is a then a first order-function,
+which takes as argument, a tuple consisting of the function-representing
+value and the argument that was originally passed to the function.
+
+As a canonical example, the ML-styled program:
+\begin{minted}{text}
+let val k = 10
+    val g = fn x => x + k
+    val h = fn y => y - 1
+    val f = fn z => z 1
+in  (f g) + (f h)
+end
+\end{minted}
+
+Is translated into (here using datatypes to represent functions):
+\begin{minted}{text}
+datatype lam = lam_g of int | lam_h | lam_f
+
+fun apply (fval, farg) =
+  case fval of
+      lam_g (k) -> k + farg
+    | lam_h     -> farg - 1
+    | lam_f     -> apply(farg, 1)
+
+let val k = 10
+    val g = lam_g (k)
+    val h = lam_h
+    val f = lam_f
+in  apply(f, g) + apply(f, h)
+end
+\end{minted}
+
+As Reynold's article really focuses on his interpreter
+defining/defined language and call-by-value/call-by-name problems.
+It leaves out a great deal of important details about how his transformation
+would work in general, and it has substantial (to me at least)
+problems when developing an automated method for translating more
+complicated programs. For instance, statically typeable ML-styled program
+translated above, translated into one that was semantically equivalent
+and first-order, but no longer typeable
+(in the case for {\tt lam\_h}, {\tt farg} is an integer,
+ in the case for {\tt lam\_f}, it is a function abstraction)!
+
+One way of fixing this, would be to split {\tt apply} into several well-typed
+functions like:
+\begin{minted}{text}
+datatype lam_int_int = lam_g of int | lam_h
+datatype lam_lam_int = lam_f
+
+fun apply_int_int (fval, farg) =
+  case fval of
+      lam_g (k) -> k + farg
+    | lam_h     -> farg - 1
+
+fun apply_lam_int (fval, farg) =
+  case fval of
+    | lam_f     -> apply_int_int(farg, 1)
+
+let val k = 10
+    val g = lam_g (k)
+    val h = lam_h
+    val f = lam_f
+in  apply_lam_int(f, g) + apply_lam_int(f, h)
+end
+\end{minted}
+This fixes typeability.
+However, it immidiately becomes clear that all functions of the same type
+will go together in the same {\tt apply}-function, which will make function
+application very slow in larger programs.
+So, we would ideally like to separate the {\tt apply}-functions
+even further, into small segments of functions that are actually available
+in the same program points.
+
+Doing so will possibly split the functions into something which is no
+longer a partitioning of the declared functions in the original program,
+but the observation that the function definitions in the original program
+was finitely many, \underline{and} that the worst imagineable case,
+where we generate $n$ {\tt apply}-functions, one for each function
+in the original program, each containing the body of every other function,
+is in fact not impossible.\\
+Since in that case, every function would be available at every function-application
+point, and so we would insted have produced a single {\tt apply}-function
+containing all function-definitions from the original program.
+
+As such we feel confindent (without a formal proof at hand),
+that the size of an eventual code-explosion would be $o(n^2)$
+(less than a small polynomial) for a program with $n$ function definitions.
+

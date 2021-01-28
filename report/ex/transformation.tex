@@ -1,0 +1,75 @@
+We do two transformations.
+\begin{enumerate}
+  \item[1.)] Reynolds transformation, with the type-preserving twist that the
+    apply-function is split into multiple well-typed ones.
+  \item[2.)] A Control-flow Based transformation, which using the analysis
+    described in the previous section.
+\end{enumerate}
+To compare results, we print the straight-forward SML representation of
+programs in L2 to a file, and check that transformed programs behave as expected.
+Moreover, we compare the average number of clauses in an apply-function,
+as done in \cite{cfa0-mlton}.
+
+{\bf Free variables:}
+
+We define the set of free variables in an expression $FV\LB e\RB$ as
+\begin{align*}
+  FV\LB\text{\tt fun $f$ $x$ = $e$}\RB &= FV\LB e\RB - \{f, x\}\\
+  FV\LB\text{\tt let $x$ = $e_0$ in $e_1$}\RB &= FV\LB e_0\RB \cup (FV\LB e_1\RB - \{x\})\\
+  FV\LB\dots\RB &= (\text{the straight forward definitions})
+\end{align*}
+
+{\bf Reynolds Transformation:}
+
+We assume, that basic type inference has already been done for us,
+
+And define a translation on types $T_\tau : \tau\TO \overline\tau$
+\begin{align*}
+  T_\tau\LB\SLIT{nat}\RB &= \LIT{nat}\\
+  T_\tau\LB\tau_0 \TO \tau_1\RB &= d_{\tau_0 \TO \tau_1}
+\end{align*}
+
+together with a type-directed transformation $T_e : L1 \TO L2$
+as you would have guessed.
+Though, instead of binding every available variable in each terms closure,
+we only keep the ones needed, by computing $FV\LB e \RB$ on appropriate expressions.
+\begin{align*}
+  T_e\LB\text{$x$}\RB &= x\\
+  T_e\LB\text{$\overline n$}\RB &= \overline n\\
+  T_e\LB\text{\tt succ($e$)}\RB &= \text{\tt succ($T_e\LB{e}\RB$)}\\
+  T_e\LB\text{\tt pred($e$)}\RB &= \text{\tt pred($T_e\LB{e}\RB$)}\\
+  T_e\LB\IF{e_0}{e_1}{e_1}\RB &= \IF{T_e\LB{e_0}\RB}{T_e\LB{e_1}\RB}{T_e\LB{e_2}\RB}\\
+  T_e\LB\text{let $x$ = $e_0$ in $e_1$}\RB &=
+  \text{\tt let $x'$ = $T_e\LB{e_0}\RB$ in $T_e\LB{e_1[x'/x]}\RB$} &\text{\hfill}(x' \not\in FV\LB{e_1}\RB)\\
+  T_e\LB\text{fun $f$ $x$ = $e$}\RB &=
+  [c_f x_0 \dots x_n] &(\forall i \in \N_{\leq n}. x_i \in FV\LB{e}\RB)\\
+  T_e\LB{e_0\ e_1}\RB &= \text{\tt apply}_{\tau_{0} \TO \tau_{1}} (T_e\LB{e_0}\RB, T_e\LB{e_1}\RB)
+  & (\Gamma\vdash e_0 : \tau_0 \TO \tau_1)
+\end{align*}
+Here the side-condition on the rule for let enforces the assumption that
+variable-names are unique from the analysis section.
+Function definition expressions are translated into new datatype-constructors
+which we generate after the $T_e$ has been fully applied.
+additionally the body $e$ and formal parameter $x$ of each function
+is lifted a match case in the appropriate {\tt apply}-function.
+
+{\bf Control Flow Based Transformation}
+
+Here we assume type-inference and the analyses described in the previous section has
+been performed, and let $\Phi : E \TO \varphi$ be a mapping from
+effect variables to their corresponding flow-sets $\varphi$.
+The transformation is then given by a function $T_\Phi : L1 \TO L2$
+\begin{align*}
+  T_{\Phi}\LB\text{$x$}\RB &= x\\
+  T_{\Phi}\LB\text{$\overline n$}\RB &= \overline n\\
+  T_{\Phi}\LB\text{\tt succ($e$)}\RB &= \text{\tt succ($T_{\Phi}\LB{e}\RB$)}\\
+  T_{\Phi}\LB\text{\tt pred($e$)}\RB &= \text{\tt pred($T_{\Phi}\LB{e}\RB$)}\\
+  T_{\Phi}\LB\IF{e_0}{e_1}{e_1}\RB &= \IF{T_{\Phi}\LB{e_0}\RB}{T_{\Phi}\LB{e_1}\RB}{T_{\Phi}\LB{e_2}\RB}\\
+  T_{\Phi}\LB\text{let $x$ = $e_0$ in $e_1$}\RB &=
+  \text{\tt let $x'$ = $T_{\Phi}\LB{e_0}\RB$ in $T_{\Phi}\LB{e_1[x'/x]}\RB$} &\text{\hfill}(x' \not\in FV\LB{e_1}\RB)\\
+  T_{\Phi}\LB\text{fun $f$ $x$ = $e$}\RB &=
+  [c_f x_0 \dots x_n] &(\forall i \in \N_{\leq n}. x_i \in FV\LB{e}\RB)\\
+  T_{\Phi}\LB{e_0\ e_1}\RB &= \text{\tt apply}_{\varphi} (T_{\Phi}\LB{e_0}\RB, T_{\Phi}\LB{e_1}\RB)
+  & (\hat\Gamma\vdash e_0 : \hat\tau_0 \xrightarrow{E} \hat\tau_1 \land \Phi(E) = \varphi)
+\end{align*}
+

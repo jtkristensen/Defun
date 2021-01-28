@@ -1,0 +1,40 @@
+
+I do not know a lot of history, but it would seem that a substantial piece
+of work has been put into approximating, at compile time,
+which values the variables of a program may denote.
+This kind of analysis is called a data-flow analysis,
+and an interesting formalization of such may be found in \cite{Nielson} (in chapter 2).
+Here the analysis is presented for a small imperative language {\tt WHILE}.
+It relies on the ability of identifying which program fragments may
+preseed each other at runtime.
+A specification of the sets of such code-fragments,
+and the relation between them is called the inter-procedural flow of a program.
+
+One of the neet featues of the typical imperative language, is that
+the operator of a procedure/function call is directly apparent
+from the program text (it is an identifier),
+which allows the inter-procedural specification
+to rely solely on the syntactic representation of a program.
+
+However, we might not be able to infer this information statically with
+other kinds of languages.
+For instance: In a functional programming language with higher order functions,
+the operator of a function call may be the result of a computation
+which is not available at compiletime\cite{cfa-jan}.
+As such, the problem motivates an analysis which approximates an inter-procedural
+specification for these kinds languages.
+
+Such an anlysis is called a control-flow analysis\cite{Nielson},
+and it is widely used in program transformations such
+as closure conversion.
+This particular transformation may be used by compilers to separate code from data,
+such that a program becomes more susceptible to further analysis.
+These analysis may leed to transformations that eliminate common subexpressions,
+remove dead code and such\cite{ClosureConversion}.
+
+
+
+
+
+
+

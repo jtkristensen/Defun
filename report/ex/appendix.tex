@@ -1,0 +1,44 @@
+For simple type inference in the example code, I introduced open types $\hat\tau$,
+and a judgment corresponding to the one from Lecture 10 in SAT 2016,
+which can be found below:
+
+\fbox{$\hat\Gamma \vdash^i e : \hat\tau\ |^{i'}\ C $}
+\begin{center}
+       \InfOne           {\hat\Gamma(x) = \hat\tau}
+               {C1-Var}  {\hat\Gamma \vdash^i x : \hat\tau\ |^i\ \cdot}
+  \quad \Axiom {C1-Nat}  {\hat\Gamma \vdash^i \overline n : \SLIT{nat} |^i\ \cdot}
+
+        \InfOne         {\hat\Gamma \vdash^i e : \hat\tau\ |^{i'}\ C}
+              {C1-Succ} {\hat\Gamma \vdash^i \SLIT{succ}(e) : \SLIT{nat} |^{i'}\
+                         \hat\tau \doteq \SLIT{nat}, C}
+        \InfOne         {\hat\Gamma \vdash^i e : \hat\tau\ |^{i'}\ C}
+              {C1-Pred} {\hat\Gamma \vdash^i \SLIT{pred}(e) : \SLIT{nat} |^{i'}\
+                         \hat\tau \doteq \SLIT{nat}, C}
+
+        \InfThree       {\hat\Gamma \vdash^i     e_0  \hat\tau_0\ |^{i'''}\ C_0 }
+                        {\hat\Gamma \vdash^{i'''} e_1  \hat\tau_1\ |^{i''}\  C_1 }
+                        {\hat\Gamma \vdash^{i''}  e_2  \hat\tau_2\ |^{i'}\   C_2 }
+             {C1-Ifz}   {\hat\Gamma \vdash^i
+                         \SLIT{if} e_0 \SLIT{then} e_1 \SLIT{else} e_2\
+                         :\ \hat\tau\ |^{i'}\
+                         C_0, C_1, C_2,
+                         \hat\tau_0 \doteq \SLIT{nat},
+                         \hat\tau_1 \doteq \hat\tau_2
+                         }
+
+        \InfOne          {\hat\Gamma[f \mapsto \BX{i} \TO \BX{i+1}, x \mapsto \BX{i}]
+                          \vdash^{i+2} e : \tau\ |^{i'} C}
+                {C1-Fun} {\hat\Gamma \vdash^i (\LIT{fun}\ f\ x\ = e)
+                          : \BX{i} \TO \BX{i + 1}\ |^{i'} \tau \doteq \BX{i+1}, C}
+
+        \InfTwo          {\hat\Gamma \vdash^{i+1} e_0 : \hat\tau_0\ |^{i''} C_0}
+                         {\hat\Gamma \vdash^{i''} e_1 : \hat\tau_1\ |^{i'}  C_1}
+                {C1-App} {\hat\Gamma \vdash^{i} e_0\ e_1
+                         : \BX{i}\ |^{i'} C_0, C_1,
+                         \hat\tau_0 \doteq \hat\tau_1 \TO \BX{i}
+                         }
+       \InfTwo           {\hat\Gamma \vdash^i e_0 :    \hat\tau_0\ |^{i''}\ C_0}
+                         {\hat\Gamma \vdash^{i''} e_1 : \hat\tau_1\ |^{i'}\ C_1}
+               {C1-Let}  {\hat\Gamma \vdash^i \LIT{let}\ x = e_0 \SLIT{in} e_1 :
+                          \hat\tau_1\ |^{i'} C_0, C_1}
+\end{center}

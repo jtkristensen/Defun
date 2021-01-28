@@ -1,0 +1,253 @@
+As mentioned, we will consider two languages, a higer-order language L1,
+and a first-order language L2.
+As such, a tranlation from L1 to L2 \underline{must} be defunctionalizing.
+Moreover, both languages are statically typeable,
+and we desire that the translation of typeable programs in L1
+results in programs of L2 that are typeable as well.
+The following section is a formal description of the two languages.
+
+{\bf L1 (source): A minimal subset of PCF with higher order functions.}
+\vspace{-1.1cm}
+\begin{center}
+\begin{align*}
+x &\in \Var                      &\text{(Well-formed variable names)}\\
+n &\in \N                        &\text{(Natural numbers)}\\
+e &::= x                         &\text{(Expressions)}\\
+  &\OR \overline n\\
+  &\OR \LIT{succ}(e)\\
+  &\OR \LIT{pred}(e)\\
+  &\OR \IF{e_0}{e_1}{e_2}             &\text{(Conditional on ``false'' booleans \smiley{})}\\
+  &\OR \LIT{let}\ x = e_0 \SLIT{in} e_2 &\text{(Let-costruct)}\\
+  &\OR \LIT{fun}\ f\ x = e              &\text{(Recursive function abstraction)}\\
+  &\OR e_0\ e_1                         &\text{(Application)}\\
+p &::= e                               &\text{(Program)}
+\end{align*}
+        Fig 1 : The syntax of L1.
+\end{center}
+A program in L1 is just an expression,
+It can be a variable, $x$, a natural number $\overline n$,
+a conditional, an application,
+or one of the usual operations {\it {successor}} of
+{\it {predesessor}} on natural numbers.
+It can also be a recursive function abstraction {\tt (fun $f$ $x$ = $e$)}.
+This constructor seems a bit unusual, but it is really just a combination of
+the usual recusion-construct and the lambda-abstraction,
+where $f$ is a recursive function in $e$, and $x$ is the name of its formal parameter.
+
+In the interst of simplicty, there are only two types in L1.
+They are the type {\tt nat} for natural numbers,
+and the type constructor {$\cdot \TO \cdot$} for function types.
+As such, we take the samantics of the if-statement
+to be the usual C-semantics, where {\tt (if $e_0$ then $e_1$ else $e_2$)}
+evaluates to $e_1$ if $e_0$ is a evaluates to a number different from $0$.
+Otherwise it evaluates to $e_2$. In all, the types $\tau$ in L1 have the grammar:
+\[ \tau ::= \SLIT{nat} \OR \tau_0 \TO \tau_1 \]
+
+We imposer the usual typing judgement rule $\Gamma \vdash e : \tau$ on L1,
+where $\Gamma : \Var \TO \tau$ is a typing environment viewed as a function from
+variable names to their types (See Fig 2).
+The values that a program (and thus an expression) in L1 can evaluate to,
+are merely numbers and function abstractions given by grammar:
+\[ v ::= \overline n \OR (\LIT{fun}\ f\ x = e)\]
+
+\newpage
+\fbox{$\Gamma \vdash e : \tau$}
+\begin{center}
+        \InfOne           {\Gamma(x) = \tau}
+                {T1-Var}  {\Gamma \vdash x : \tau}
+  \quad \Axiom  {T1-N}    {\Gamma \vdash \overline n : \LIT{nat}}
+
+        \InfOne           {\Gamma \vdash e : \LIT{nat} }
+                {T1-Succ} {\Gamma \vdash \LIT{succ}(e) : \LIT{nat}}
+  \quad \InfOne           {\Gamma \vdash e : \LIT{nat} }
+                {T1-Pred} {\Gamma \vdash \LIT{pred}(e) : \LIT{nat}}
+
+        \InfThree         {\Gamma \vdash e_0 : \LIT{nat}}
+                          {\Gamma \vdash e_1 : \tau}
+                          {\Gamma \vdash e_2 : \tau}
+                {T1-If}  {\Gamma \vdash (\IF{e_0}{e_1}{e_2}) : \tau}
+
+        \InfTwo           {\Gamma                   \vdash e_0 : \tau_0}
+                          {\Gamma[x \mapsto \tau_0] \vdash e_1 : \tau_1}
+                {T1-Let}  {\Gamma \vdash \LIT{let}\ x = e_0 \SLIT{in} e_1 : \tau_1}
+
+        \InfOne           {\Gamma[f \mapsto \tau_0 \TO \tau_1, x \mapsto \tau_0]
+                           \vdash e : \tau_1}
+                {T1-Fun}  {\Gamma \vdash (\LIT{fun}\ f\ x = e) : \tau_0 \TO \tau_1}
+        \InfTwo           {\Gamma \vdash e_0 : \tau_1 \TO \tau_2}
+                          {\Gamma \vdash e_1 : \tau_1}
+                {T1-App}  {\Gamma \vdash (e_0\ e_1) : \tau_2}
+
+\vspace{.5cm}            Fig 2 : Typing judgement for L1.
+\end{center}
+
+The semantics for evaluating an expression to a value is given by the
+ususal small step semantics rule, which can be found in Figure 3.
+
+\fbox{$e \TO e'$}
+\begin{center}
+          (no rules for free variables or values)
+
+        \InfOne             {e \TO e'}
+                {S1-Succ1}  {\LIT{succ}(e) \TO \LIT{succ}(e')}
+  \quad \InfOne             {e \TO e'}
+                {S1-Pred1}  {\LIT{pred}(e) \TO \LIT{pred}(e')}
+
+  \quad \Axiom  {S1-SuccV}  {\LIT{succ}(\overline n) \TO \overline {n + 1}}
+  \quad \Axiom  {S1-PredV}  {\LIT{pred}(\overline n) \TO
+                            \overline {n - 1}
+                            }{\scriptsize($\overline n \neq \overline 0$)}
+  \quad \Axiom  {S1-PredZ}  {\LIT{pred}(\overline 0) \TO \overline 0}
+
+        \InfOne             {e_0 \TO e_0'}
+                {S1-IF1}    {\IF{e_0}{e_1}{e_2} \TO \IF{e_0'}{e_1}{e_2}}
+
+        \Axiom  {S1-IF0}    {\SLIT{if} \overline 0 \SLIT{then} e_1 \SLIT{else} e_2
+                             \TO   e_2
+                            }
+  \quad \Axiom  {S1-IFN}    {\SLIT{if} \overline n \SLIT{then} e_1 \SLIT{else} e_2
+                             \TO   e_1
+                            }{\scriptsize($n \neq 0$)}
+
+        \InfOne            {e_0 \TO e_0'}
+                {S1-LET1}  {\LIT{let}\ x = e_0  \SLIT{in} e_1 \TO
+                            \LIT{let}\ x = e_0' \SLIT{in} e_1}
+        \Axiom  {S-LETV}   {\LIT{let}  x = v_0  \SLIT{in} e_1 \TO e_1[v_0/x]}
+
+        \InfOne            {e_0 \TO e_0'}
+                {S1-APP1}  {e_0\ e_1 \TO e_0'\ e_1}
+  \quad \InfOne            {e_1 \TO e_1'}
+                {S1-APP2}  {v_0\ e_1 \TO v_0\ e_1'}
+
+        \Axiom  {S1-APPV}  {(\LIT{fun}\ f\ x = e)\ v_0
+                            \TO e[v_0/x, (\LIT{fun}\ f\ x = e)/f]}
+
+
+\vspace {.5cm}            Fig 3 : small-step semantics for L1.
+\end{center}
+
+And we in the following, we write $e_0 \TO^{*} e_1$ when $e_0$ steps to $e_1$ in zero
+or more steps. So, a program $p = e$ evaluates to a vaule $v$ exactly if $e \TO^{*} v$.
+
+To facilitate the defunctionalization,
+we need a target languge with some additional constructs for producing values which
+{\it represent} functions.
+We decide to abstract a function $f$ into datatype constructors
+$d_f = [c_f\ x_0 \dots x_n]$,
+where $c_f$ is a constructor name, and each $x_i$ is a variable
+in the environment $f_{env}$ of $f$.
+As Reynolds observed at the time of writing this paper\cite{Reynolds1968},
+we only need to construct {\it one} such closure-representing datatype-constructor
+for each of the finitely many recursive function definitions in the program.
+The grammar of this language L2 can be found in Fig 4.
+
+\newpage
+{\bf L2 (target): A minimal subset of PCF/ML with user defined datatype constructors, and mutually recursive function definitions.}
+\vspace {-1.1cm}
+\begin{center}
+\begin{align*}
+x, f    &\in \Var                         & \text{(Well-formed variable names)}\\
+d       &\in \Var                         & \text{(Well-formed datatype names)}\\
+c       &\in \Var                         & \text{(Well-formed constructor names)}\\
+n, m, k &\in \N                           & \text{(Natural numbers)}\\
+fd      &::= f\ (x_{00}, \dots x_n) = e_{0}  & \text{({\it Pattern-matching} function definition)}\\
+        &\quad \OR \ \ \quad \vdots \quad \ddots \quad \vdots\\
+        &\quad\OR f (x_{n0}, \dots x_{nm}) = e_{m}\\
+dd      &::= x = cd_0 \dots cd_n          & \text{(Datatype definition)}\\
+cd      &::= [c\ \overline t_{0} \dots \overline t_{n}]
+                                          & \text{(Constructor definition)}\\
+e      &::= x                             & \text{(Expressions)}\\
+       &\OR \overline n\\
+       &\OR \LIT{succ}(e)\\
+       &\OR \LIT{pred}(e)\\
+       &\OR \IF{e_0}{e_1}{e_2}\\
+       &\OR \LIT{let}\ x = e_0 \SLIT{in} e_2 &\text{(Let-costruct)}\\
+       &\OR [c\ e_0 \dots e_n]               &\text{(Constructor application)}\\
+       &\OR (e_0,\dots ,e_n)                 &\text{($n$-Tuple)}\\
+       &\OR f\ e                             &\text{(Function application)}\\
+p      &::=\quad \LIT{datatype}\ dd_0 \SLIT{and} \dots \SLIT{and} dd_n
+       & \text{(Program)}\\
+       &   \quad\quad\ \LIT{fun}\qquad\quad f\!d_0 \SLIT{and}\dots\SLIT{and} f\!d_m\\
+       &   \quad\quad\ \LIT{in}\ e
+\end{align*}
+        Fig 4 : The syntax of L2.
+\end{center}
+The reason that constructor application goes into square brackets,
+is merely not to confuse it with function application syntactically.
+
+The types in this language are either a simple type $\overline\tau$,
+which may be a natural number {\tt nat} as in L1,
+or the name of a userdefined datatype,
+or an $n-tuple$ of simple types:
+\[\overline \tau ::= \LIT{nat}
+                 \OR d
+                 \OR (\overline t_0 \times \dots \times \overline t_n)
+\]
+Additionaly it may be a ``top-level'' type, which is either
+a simple type, or a first-order function type:
+\[\tau^2 ::= \overline \tau \OR \overline \tau_0 \TO \overline \tau_1 \]
+
+And the typing rules for L2 are the usual rules for ML, with the twist
+that the conditional requires the premis to be of type {\tt nat},
+where ML would require {\tt bool}.
+
+As with L1, we define values of programs in L2 to be one of two things.
+It is either a natual number, or a closure - represented by a type constructor.
+So:
+\[ \overline v ::= \overline n \OR [c\ v_0 \dots v_n]\]
+
+Given environment a function definition-environment $\nabla$,
+expressions in L2 evaluate by the semantics given in Fig 5.
+\def\EVAL{\downarrow}
+
+\fbox{$\nabla \vdash e \EVAL v$}
+\begin{center}
+        (No rules for expressions that are already values)
+
+        \Axiom {E2-Nat}  {\nabla\vdash \overline n \EVAL \overline n}
+        \InfOne          {\nabla\vdash e \EVAL \overline n}
+               {E2-Succ} {\nabla\vdash \LIT{succ}(e) \EVAL \overline {n + 1}}
+
+        \InfOne           {\nabla\vdash e \EVAL \overline 0}
+               {E2-PredZ} {\nabla\vdash \LIT{pred}(e) \EVAL \overline {0}}
+        \InfOne           {\nabla\vdash e \EVAL \overline n}
+               {E2-PredV} {\nabla\vdash \LIT{pred}(e) \EVAL \overline {n - 1}
+                          }{\scriptsize($n \neq 0$)}
+
+        \InfTwo           {\nabla\vdash e_0 \EVAL \overline 0}
+                          {\nabla\vdash e_2 \EVAL v}
+               {E2-IfZ}   {\nabla\vdash \IF{e_0}{e_1}{e_2} \EVAL v
+                          }
+        \InfTwo           {\nabla\vdash e_0 \EVAL \overline n}
+                          {\nabla\vdash e_1 \EVAL v}
+               {E2-IfN}   {\nabla\vdash \IF{e_0}{e_1}{e_2} \EVAL v
+                          }{\scriptsize($n \neq 0$)}
+
+        \InfOne           {\forall i \in \N_{\leq n}. (\nabla\vdash e_i \EVAL v_i)}
+            {E2-DataCon}  {\nabla\vdash [c\ e_0 \dots e_i]
+                           \EVAL [c\ v_0 \dots v_n]}
+        \InfTwo           {\nabla\vdash e_0 \EVAL v_0}
+                          {\nabla\vdash e_1[v_0/x] \EVAL v_1}
+            {E2-Let}      {\nabla\vdash\ \LIT{let}\ x = e_0 \SLIT{in} e_1 \EVAL v_1}
+
+        {\scriptsize
+        \InfThree         {\nabla(f) =
+                           \begin{aligned}
+                             &\ \ \ f\ (x_{00}, \dots x_{n0}) = e_{0}\\
+                             &\OR \ \ \quad \vdots \quad \ddots \quad \vdots\\
+                             &\OR f (x_{n0}, \dots x_{nm}) = e_m
+                           \end{aligned}}
+                          {\forall i \in \N_{\leq n}. \nabla\vdash {e_{ki} \EVAL v_{ki}}}
+                          {\nabla\vdash e_{k0}[d_f/f, v_{k0}/x_{k0}, \dots, v_{kn}/x_{kn}] \EVAL v}
+            {\small E2-App}      {\nabla\vdash (f (e_{k0}, \dots, e_{km})) \EVAL v}
+            }
+
+\vspace{.1cm}            Fig 5 : Big step semantics for L2.
+\end{center}
+Where the latter, and more complicated {E2-App} rule, ammounts to finding
+the function definition of $f$ in $\nabla$, then finding the first matching pattern
+on $(e_{k0}, \dots, e_{km})$, and then substituting each evaluated expression,
+together with the datatype constructor application $d_f$,
+corresponding to the closure of $f$, into the body $e_{k}$ of the matched case
+body of $f$.
+

@@ -1,0 +1,17 @@
+
+In chapter 3 and 5 of the book {\it Principles in Program Analysis}\cite{PoPA},
+a constraint based control flow analysis is suggested and formalized.
+The analysis produces inter-procedural control flow information,
+such as a list/cache of function names describing the set
+of function definitions that can result in a given type.
+
+The analysis i typically used in whole program transformations such as
+John Reynolds's defunctionalizing transformation\cite{Reynolds1968,Reynolds1998}.
+Which transforms higer-order programs into first-order ones.
+
+In this project, we motivate, formalize and implement the analysis suggested in
+chapter 5 in the style of a the anotated typesystem for the small higher
+order programming language found in\cite{fun}.
+Furthermore, we perform the transformation described in
+Reynolds's article\cite{Reynolds1968},
+and compare it to a control-flow version of the same transformation.

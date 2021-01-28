@@ -1,0 +1,31 @@
+\begin{thebibliography}{1}
+
+\bibitem{fun}
+ A.~Filinski, Type and effect systems  (2018).
+
+\bibitem{cfa-jan}
+ J.~Midtgaard, Control-flow analysis of functional programs.
+
+\bibitem{PoPA}
+ F.~Nielson, \emph{Principles of program analysis}, corr. 2. print.~Edition,
+  Springer, Berlin 2005  (1999).
+
+\bibitem{Nielson}
+ F.~Nielson and H.~R. Nielson, Type and effect systems.
+
+\bibitem{Reynolds1968}
+ J.~C. Reynolds, Definitional interpreters for higher-order programming
+  languages, \emph{Higher-Order and Symbolic Computation}  (1968).
+
+\bibitem{Reynolds1998}
+ J.~C. Reynolds, Definitional interpreters revisited.(author abstract),
+  \emph{Higher-Order and Symbolic Computation} \textbf{11}, 2  (1998).
+
+\bibitem{cfa0-mlton}
+ R.~Shea and M.~Fluet, Alternate control-flow analyses for defunctionalization
+  in the mlton compiler  (2016).
+
+\bibitem{ClosureConversion}
+ M.~Yasuhiko, G.~Morrisett, and R.~Harper, Typed closure conversion  (1996).
+
+\end{thebibliography}
